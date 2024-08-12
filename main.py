@@ -35,6 +35,19 @@ def create_destination():
     except Exception as e:
         return jsonify({'error':str(e)}), 500
 
+@app.route('/destinations/<destination_name>', methods=['DELETE'])
+def delete_destination(destination_name):
+    try:
+        destination_delete = Destinations.query.filter_by(Name=destination_name).first()
+        if destination_delete is None:
+            return jsonify({'error': 'Destination not found' }), 404
+
+        db.session.delete(destination_delete)
+        db.session.commit()
+        return jsonify ({'message': 'Destination deleted Succesfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 
 
