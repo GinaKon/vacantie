@@ -6,9 +6,9 @@ load_dotenv()
 
 
 class Config:
-    SECRET_KEY = "coso1234"
+    SECRET_KEY = ""
     # set our local database:
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:G1nain3dinburgh!@localhost/vacantie'
+    SQLALCHEMY_DATABASE_URI = ''
     # to stop loggin messages when we do anything:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # to know the state of the db when we run a function (it shows the sql queries that are happening behind scenes):
