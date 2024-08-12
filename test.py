@@ -37,6 +37,51 @@ class DestinationsTestCase(unittest.TestCase):
 
             self.assertEqual(response.status_code, 201)
 
+    def create_destination_with_missing_name_returns_response_422(self):
+        with app.app_contaxt():
+            response = self.client.post('/destinations',
+                                        json={'name':'Name', 'temperature': 'Temperature'})
+
+            self.assertEqual(response.status_code, 422)
+
+    @patch('main.Destinations.query')
+    def test_create_destination_with_duplicate_name_returns_response_409(self, mock_query):
+        with app.app_context():
+            destination = Destinations(
+                Id="Test",
+                Name="Test",
+                Temperature="Test"
+            )
+            mock_query.filter_by.return_value.first.return_value = destination
+
+            response = self.client.post('/destinations',
+                                        json={'name': 'Create a destination', 'temperature':'Temperature'})
+
+            self.assertEqual(response.status_code, 409)
+
+    @patch('main.db.session')
+    @patch('main.Destinations.query')
+    def test_delete_destination_with_valid_destination_returns_response_200(self, mock_query, mock_db_session):
+        with app.app_context():
+            destination = Destinations(
+                Id="Test",
+                Name="Test",
+                Temperature="Test"
+            )
+            mock_query.filter_by.return_value.first.return_value = destination
+            mock_db_session.delete.return_value = None
+            mock_db_session.commit.return_value = None
+
+            response = self.client.delete('/destinations/Test')
+
+            self.assertEqual(response.status_code, 200)
+
+    def test_delete_destination_with_invalid_destination_returns_response_404(self):
+        with app.app_context():
+            response = self.client.delete('/destinations/Test')
+
+            self.assertEqual(response.status_code, 404)
+
 
 
 if __name__ == '__main__':
