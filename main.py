@@ -40,15 +40,32 @@ def delete_destination(destination_name):
     try:
         destination_delete = Destinations.query.filter_by(Name=destination_name).first()
         if destination_delete is None:
-            return jsonify({'error': 'Destination not found' }), 404
+            return jsonify({'error':'Destination not found' }), 404
 
         db.session.delete(destination_delete)
         db.session.commit()
-        return jsonify ({'message': 'Destination deleted Succesfully'}), 200
+        return jsonify ({'message':'Destination deleted Succesfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/destinations/<int:temperature>' , methods=['PATCH'])
+def update_ideal_temp(temperature):
+    try:
+        destination_update = Destinations.query.filter_by(Temperature=temperature).first()
+        if destination_update is None:
+            return jsonify ({'error':'Destination not found'}), 404
 
+        new_temperature = request.json.get('new_temperature')
+        if new_temperature is None:
+            return jsonify({'error': 'New temperature is required'}), 422
+
+        destination_update.Temperature = new_temperature
+        db.session.commit()
+
+        return jsonify({'message': 'Destination temperature updated successfully',
+                        'updated_destination': destination_update.serialize()}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__' :
