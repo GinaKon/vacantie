@@ -51,7 +51,11 @@ def delete_destination(destination_name):
 @app.route('/destinations/<int:temperature>' , methods=['PATCH'])
 def update_ideal_temp(temperature):
     try:
-        destination_update = Destinations.query.filter_by(Temperature=temperature).first()
+        destination_name = request.json.get('destination_name')
+        if destination_name is None:
+            return jsonify({'error' : 'Destination name is required'})
+
+        destination_update = Destinations.query.filter_by(Temperature=temperature, Name=destination_name).first()
         if destination_update is None:
             return jsonify ({'error':'Destination not found'}), 404
 
