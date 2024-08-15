@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request, session
 from model import db, Destinations
 from config import Config
 from uuid import uuid4
+import cryptography
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -48,14 +50,18 @@ def delete_destination(destination_name):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/destinations/<int:temperature>' , methods=['PATCH'])
-def update_ideal_temp(temperature):
+@app.route('/destinations', methods=['PATCH'])
+def update_ideal_temp():
     try:
         destination_name = request.json.get('destination_name')
-        if destination_name is None:
-            return jsonify({'error' : 'Destination name is required'})
+        current_temperature = request.json.get('current_temperature')
 
-        destination_update = Destinations.query.filter_by(Temperature=temperature, Name=destination_name).first()
+        if destination_name is None:
+            return jsonify({'error' : 'Destination name is required'}), 422
+        if current_temperature is None:
+            return jsonify({'error': 'Current temperature is required'}), 422
+
+        destination_update = Destinations.query.filter_by(Temperature=current_temperature, Name=destination_name).first()
         if destination_update is None:
             return jsonify ({'error':'Destination not found'}), 404
 
