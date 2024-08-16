@@ -93,8 +93,11 @@ class DestinationsTestCase(unittest.TestCase):
                 Temperature = "23"
             )
             mock_query.filter_by.return_value.first.return_value = destination_update
-            mock_db_session.add.return_value = destination_update
-            mocked_json(destination_update.serialize()).return_value = "Test"
+            mock_db_session.commit.return_value = None
+            mocked_json.return_value = {
+                "message": "Destination temperature updated successfully",
+                "updated_destination": destination_update.serialize()
+            }
 
             response = self.client.patch('/destinations',
                                          json = {'current_temperature': 23,
