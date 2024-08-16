@@ -87,17 +87,18 @@ class DestinationsTestCase(unittest.TestCase):
     @patch("main.Destinations.query")
     def test_update_ideal_temp_returns_response_200(self, mock_query, mock_db_session, mocked_json):
         with app.app_context():
-            destination = Destinations(
+            destination_update = Destinations(
                 Id = "Test",
                 Name = "Test",
                 Temperature = "23"
             )
-            mock_query.filter_by.return_value.first.return_value = None
-            mock_db_session.add.return_value = destination
-            mocked_json(destination.serialize()).return_value = "Test"
+            mock_query.filter_by.return_value.first.return_value = destination_update
+            mock_db_session.add.return_value = destination_update
+            mocked_json(destination_update.serialize()).return_value = "Test"
 
-            response = self.client.patch('/destinations/23',
-                                         json = {'new_temperature': 25})
+            response = self.client.patch('/destinations',
+                                         json = {'current_temperature': 23,
+                                         'destination_name': 'Test','new_temperature': 25})
 
             self.assertEqual(response.status_code, 200)
 
