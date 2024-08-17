@@ -54,14 +54,11 @@ def delete_destination(destination_name):
 def update_ideal_temp():
     try:
         destination_name = request.json.get('destination_name')
-        current_temperature = request.json.get('current_temperature')
 
         if destination_name is None:
             return jsonify({'error' : 'Destination name is required'}), 422
-        if current_temperature is None:
-            return jsonify({'error': 'Current temperature is required'}), 422
 
-        destination_update = Destinations.query.filter_by(Temperature=current_temperature, Name=destination_name).first()
+        destination_update = Destinations.query.filter_by(Name=destination_name).first()
         if destination_update is None:
             return jsonify ({'error':'Destination not found'}), 404
 
