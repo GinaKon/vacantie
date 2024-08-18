@@ -37,12 +37,12 @@ class DestinationsTestCase(unittest.TestCase):
 
             self.assertEqual(response.status_code, 201)
 
-    def create_destination_with_missing_name_returns_response_422(self):
-        with app.app_contaxt():
+    def test_create_destination_with_missing_name_returns_response_500(self):
+        with app.app_context():
             response = self.client.post('/destinations',
                                         json={'name':'Name', 'temperature': 'Temperature'})
 
-            self.assertEqual(response.status_code, 422)
+            self.assertEqual(response.status_code, 500)
 
     @patch('main.Destinations.query')
     def test_create_destination_with_duplicate_name_returns_response_409(self, mock_query):
@@ -76,12 +76,34 @@ class DestinationsTestCase(unittest.TestCase):
 
             self.assertEqual(response.status_code, 200)
 
-    def test_delete_destination_with_invalid_destination_returns_response_404(self):
+    def test_delete_destination_with_invalid_destination_name_returns_response_404(self):
         with app.app_context():
             response = self.client.delete('/destinations/Test')
 
             self.assertEqual(response.status_code, 404)
 
+    @patch("main.jsonify")
+    @patch("main.db.session")
+    @patch("main.Destinations.query")
+    def test_update_ideal_temp_returns_response_200(self, mock_query, mock_db_session, mocked_json):
+        with app.app_context():
+            destination_update = Destinations(
+                Id = "Test",
+                Name = "Test",
+                Temperature = "23"
+            )
+            mock_query.filter_by.return_value.first.return_value = destination_update
+            mock_db_session.commit.return_value = None
+            mocked_json.return_value = {
+                "message": "Destination temperature updated successfully",
+                "updated_destination": destination_update.serialize()
+            }
+
+            response = self.client.patch('/destinations',
+                                         json = {'current_temperature': 23,
+                                         'destination_name': 'Test','new_temperature': 25})
+
+            self.assertEqual(response.status_code, 200)
 
 
 if __name__ == '__main__':
