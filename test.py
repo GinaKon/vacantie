@@ -100,10 +100,25 @@ class DestinationsTestCase(unittest.TestCase):
             }
 
             response = self.client.patch('/destinations',
-                                         json = {'current_temperature': 23,
-                                         'destination_name': 'Test','new_temperature': 25})
+                                         json = {'destination_name': 'Test','new_temperature': 25})
 
             self.assertEqual(response.status_code, 200)
+
+    @patch("main.db.session")
+    @patch("main.Destinations.query")
+    def test_update_ideal_temp_with_missing_name_returns_response_500(self, mock_query, mock_db_session):
+        with app.app_context():
+            response = self.client.patch('/destinations',
+                                            json = {'destination_name': 'Test', 'new_temperature': 25})
+
+            self.assertEqual(response.status_code, 500)
+
+    def test_update_ideal_temp_with_invalid_destination_name_returns_response_404(self):
+        with app.app_context():
+            response = self.client.patch('/destinations',
+                                            json = {'destination_name': 'Test', 'new_temperature': 25})
+
+            self.assertEqual(response.status_code, 404)
 
 
 if __name__ == '__main__':
