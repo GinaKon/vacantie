@@ -86,6 +86,18 @@ def fetch_all_destinations():
         return jsonify({'error' : 'Please try again'}), 500
 
 
+@app.route('/get_destination', methods = ['GET'])
+def get_destination():
+    try:
+        args = request.args
+        destination_name = args.get('destination')
+        destination_to_find = Destinations.query.filter_by(Name=destination_name).first()
+        if destination_to_find is None:
+            return jsonify({'error': 'Destination not found'}), 404
+
+        return jsonify(destination_to_find.serialize()), 200
+    except Exception as e:
+        return jsonify({'error': 'Please try again'}), 500
 
 if __name__ == '__main__' :
     app.run(debug=True, port=8080)
