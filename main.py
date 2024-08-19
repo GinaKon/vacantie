@@ -74,6 +74,18 @@ def update_ideal_temp():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/fetch_destinations', methods=['GET'])
+def fetch_all_destinations():
+    try:
+        destinations = Destinations.query.all()
+        destinations_serialized = [destination.serialize() for destination in destinations]
+
+        return jsonify(destinations_serialized), 200
+
+    except Exception as e:
+        return jsonify({'error' : 'Please try again'}), 500
+
+
 
 if __name__ == '__main__' :
     app.run(debug=True, port=8080)
