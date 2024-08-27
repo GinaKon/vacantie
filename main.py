@@ -112,7 +112,7 @@ def get_verdict():
 
         ideal_temperature = destination.Temperature
 
-        api_key = 'KaFIkTNjT3CgIbkFGYLY3633FiW71u67'
+        api_key = ''
         endpoint = f'https://api.tomorrow.io/v4/weather/realtime'
         params = {
             'location': destination_name,
