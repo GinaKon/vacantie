@@ -3,6 +3,7 @@ from model import db, Destinations
 from config import Config
 from uuid import uuid4
 import cryptography
+import requests
 
 
 app = Flask(__name__)
@@ -98,6 +99,49 @@ def get_destination():
         return jsonify(destination_to_find.serialize()), 200
     except Exception as e:
         return jsonify({'error': 'Please try again'}), 500
+
+@app.route('/get_verdict', methods=['GET'])
+def get_verdict():
+    try:
+        args = request.args
+        destination_name = args.get('destination')
+
+        destination = Destinations.query.filter_by(Name=destination_name).first()
+        if not destination:
+            return jsonify({'error': 'Destination not found'}), 404
+
+        ideal_temperature = destination.Temperature
+
+        endpoint = f'https://api.tomorrow.io/v4/weather/realtime'
+        params = {
+            'location': destination_name,
+            'apikey': Config.API_KEY
+        }
+        headers = {'accept': 'application/json'}
+        response = requests.get(endpoint, headers=headers, params=params)
+
+        if response.status_code != 200:
+            return jsonify({'error': 'Failed to get data from API'}), 500
+
+        data = response.json()
+
+        current_temperature = data['data']['values']['temperature']
+
+        if current_temperature == ideal_temperature:
+            verdict = "Perfect"
+        elif current_temperature > ideal_temperature:
+            verdict = "Too Hot"
+        else:
+            verdict = "Too Cold"
+
+        return jsonify({
+            'currentTemperature': current_temperature,
+            'idealTemperature': ideal_temperature,
+            'verdict': verdict
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__' :
     app.run(debug=True, port=8080)
