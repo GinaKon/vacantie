@@ -37,12 +37,12 @@ class DestinationsTestCase(unittest.TestCase):
 
             self.assertEqual(response.status_code, 201)
 
-    def test_create_destination_with_missing_name_returns_response_500(self):
+    def test_create_destination_with_missing_name_returns_response_422(self):
         with app.app_context():
             response = self.client.post('/destinations',
-                                        json={'name':'Name', 'temperature': 'Temperature'})
+                                        json={'temperature': 'Temperature'})
 
-            self.assertEqual(response.status_code, 500)
+            self.assertEqual(response.status_code, 422)
 
     @patch('main.Destinations.query')
     def test_create_destination_with_duplicate_name_returns_response_409(self, mock_query):
