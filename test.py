@@ -106,12 +106,21 @@ class DestinationsTestCase(unittest.TestCase):
 
     @patch("main.db.session")
     @patch("main.Destinations.query")
-    def test_update_ideal_temp_with_missing_name_returns_response_500(self, mock_query, mock_db_session):
+    def test_update_ideal_temp_with_missing_name_returns_response_422(self, mock_query, mock_db_session):
         with app.app_context():
             response = self.client.patch('/destinations',
-                                            json = {'destination_name': 'Test', 'new_temperature': 25})
+                                            json = {'new_temperature': 25})
 
-            self.assertEqual(response.status_code, 500)
+            self.assertEqual(response.status_code, 422)
+
+    @patch("main.db.session")
+    @patch("main.Destinations.query")
+    def test_update_ideal_temp_with_new_temp_missing_name_returns_response_422(self, mock_query, mock_db_session):
+        with app.app_context():
+            response = self.client.patch('/destinations',
+                                         json = {'destination_name': 'Test'})
+
+            self.assertEqual(response.status_code, 422)
 
     def test_update_ideal_temp_with_invalid_destination_name_returns_response_404(self):
         with app.app_context():
@@ -119,6 +128,16 @@ class DestinationsTestCase(unittest.TestCase):
                                             json = {'destination_name': 'Test', 'new_temperature': 25})
 
             self.assertEqual(response.status_code, 404)
+
+    @patch("main.jsonify")
+    @patch("main.db.session")
+    @patch("main.Destinations.query")
+    def test_fetch_all_destinations_returns_response_200(self, mock_json, mock_db_session, mock_query):
+        with app.app_context():
+            response = self.client.get('fetch_destinations')
+
+            self.assertEqual(response.status_code, 200)
+
 
 
 if __name__ == '__main__':
