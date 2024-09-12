@@ -138,7 +138,24 @@ class DestinationsTestCase(unittest.TestCase):
 
             self.assertEqual(response.status_code, 200)
 
+    @patch("main.Destinations.query")
+    def test_get_destination_with_valid_destination_name_returns_response_200(self,mocked_destination):
+        with app.app_context():
+            destination = Destinations(
+                Id="Test",
+                Name="Test",
+                Temperature="23"
+            )
+            mocked_destination.filter_by.return_value.first.return_value = destination
+            response = self.client.get('/get_destination?destination=Test')
 
+            self.assertEqual(response.status_code, 200)
+
+    def test_get_destination_with_no_destination_name_returns_response_404(self):
+        with app.app_context():
+            response = self.client.get('/get_destination?destination=Test')
+
+            self.assertEqual(response.status_code, 404)
 
 if __name__ == '__main__':
     unittest.main()
