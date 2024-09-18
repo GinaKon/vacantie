@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from model import Destinations
 from main import app
 
@@ -156,6 +156,113 @@ class DestinationsTestCase(unittest.TestCase):
             response = self.client.get('/get_destination?destination=Test')
 
             self.assertEqual(response.status_code, 404)
+
+    @patch("main.requests.get")
+    @patch("main.Destinations.query")
+    def test_get_verdict_with_perfect_temp_returns_response_200(self, mock_query, mock_get):
+        destination = Destinations(
+            Id="Test",
+            Name="Test",
+            Temperature=25
+        )
+        mock_query.filter_by.return_value.first.return_value = destination
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            'data': {'values': {'temperature': 25}}
+        }
+        mock_get.return_value = mock_response
+
+        response = self.client.get('/get_verdict?destination=Test')
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.get_json()
+        self.assertEqual(response_data['currentTemperature'], 25)
+        self.assertEqual(response_data['idealTemperature'], 25)
+        self.assertEqual(response_data['verdict'], 'Perfect')
+
+    @patch("main.requests.get")
+    @patch("main.Destinations.query")
+    def test_get_verdict_with_high_temp_returns_too_hot(self, mock_query, mock_get):
+        destination = Destinations(
+            Id="Test",
+            Name="Test",
+            Temperature=20
+        )
+        mock_query.filter_by.return_value.first.return_value = destination
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            'data': {'values': {'temperature': 25}}
+        }
+        mock_get.return_value = mock_response
+
+        response = self.client.get('/get_verdict?destination=Test')
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.get_json()
+        self.assertEqual(response_data['currentTemperature'], 25)
+        self.assertEqual(response_data['idealTemperature'], 20)
+        self.assertEqual(response_data['verdict'], 'Too Hot')
+
+    @patch("main.requests.get")
+    @patch("main.Destinations.query")
+    def test_get_verdict_with_low_temp_returns_too_cold(self, mock_query, mock_get):
+        destination = Destinations(
+            Id="Test",
+            Name="Test",
+            Temperature=30
+        )
+        mock_query.filter_by.return_value.first.return_value = destination
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            'data': {'values': {'temperature': 25}}
+        }
+        mock_get.return_value = mock_response
+
+        response = self.client.get('/get_verdict?destination=Test')
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.get_json()
+        self.assertEqual(response_data['currentTemperature'], 25)
+        self.assertEqual(response_data['idealTemperature'], 30)
+        self.assertEqual(response_data['verdict'], 'Too Cold')
+
+    @patch("main.requests.get")
+    @patch("main.Destinations.query")
+    def test_get_verdict_destination_not_found(self, mock_query, mock_get):
+        mock_query.filter_by.return_value.first.return_value = None
+
+        response = self.client.get('/get_verdict?destination=NonExistent')
+
+        self.assertEqual(response.status_code, 404)
+        response_data = response.get_json()
+        self.assertEqual(response_data['error'], 'Destination not found')
+
+    @patch("main.requests.get")
+    @patch("main.Destinations.query")
+    def test_get_verdict_api_failure(self, mock_query, mock_get):
+        destination = Destinations(
+            Id="Test",
+            Name="Test",
+            Temperature=25
+        )
+        mock_query.filter_by.return_value.first.return_value = destination
+
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+        mock_get.return_value = mock_response
+
+        response = self.client.get('/get_verdict?destination=Test')
+
+        self.assertEqual(response.status_code, 500)
+        response_data = response.get_json()
+        self.assertEqual(response_data['error'], 'Failed to get data from API')
+
 
 if __name__ == '__main__':
     unittest.main()

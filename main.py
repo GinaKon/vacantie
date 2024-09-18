@@ -110,7 +110,7 @@ def get_verdict():
         if not destination:
             return jsonify({'error': 'Destination not found'}), 404
 
-        ideal_temperature = destination.Temperature
+        ideal_temperature = float(destination.Temperature)
 
         endpoint = f'https://api.tomorrow.io/v4/weather/realtime'
         params = {
